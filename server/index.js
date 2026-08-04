@@ -1,10 +1,13 @@
 import "dotenv/config";
 import express from "express";
 import pool from "./db.js";
-import { getAuthUrl, exchangeToken, getRides } from "./strava.js";
+import cors from "cors";
+import { getAuthUrl, exchangeToken, getRides, syncRides } from "./strava.js";
 
 const app = express();
 const port = 3000;
+
+app.use(cors());
 
 app.get("/auth/strava", (req, res) => {
   res.redirect(getAuthUrl());
@@ -29,6 +32,11 @@ app.get("/auth/callback", async (req, res) => {
 app.get("/api/rides", async (req, res) => {
   const rides = await getRides();
   res.json(rides);
+});
+
+app.get("/api/sync", async (req, res) => {
+  await syncRides();
+  res.send("Rides synced!");
 });
 
 app.listen(port, () => {

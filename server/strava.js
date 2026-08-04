@@ -43,3 +43,24 @@ export const getRides = async () => {
   const rides = await response.json();
   return rides;
 };
+
+export const syncRides = async () => {
+  const rides = await getRides();
+  for (const ride of rides) {
+    await pool.query(
+      "INSERT INTO rides (strava_id, ride_name, start_time, duration, avg_speed, top_speed, heart_rate, elevation_gain, distance, map) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (strava_id) DO NOTHING",
+      [
+        ride.id,
+        ride.name,
+        ride.start_date,
+        ride.moving_time,
+        ride.average_speed,
+        ride.max_speed,
+        ride.average_heartrate,
+        ride.total_elevation_gain,
+        ride.distance,
+        ride.map.summary_polyline,
+      ],
+    );
+  }
+};
