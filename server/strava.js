@@ -1,4 +1,5 @@
 import "dotenv/config";
+import pool from "./db.js";
 
 export const exchangeToken = async (code) => {
   const response = await fetch("https://www.strava.com/oauth/token", {
@@ -24,5 +25,21 @@ export const getAuthUrl = () => {
     scope: "activity:read_all",
   });
   console.log(`https://www.strava.com/oauth/authorize?${params}`);
-  return "https://www.strava.com/oauth/authorize?${params}";
+  return `https://www.strava.com/oauth/authorize?${params}`;
+};
+
+export const getRides = async () => {
+  const result = await pool.query("SELECT access_token FROM tokens LIMIT 1");
+  const accessToken = result.rows[0].access_token;
+
+  const response = await fetch(
+    "https://www.strava.com/api/v3/athlete/activities",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  const rides = await response.json();
+  return rides;
 };
